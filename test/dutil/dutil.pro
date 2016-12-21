@@ -1,6 +1,7 @@
+include($$PWD/../../config.pri)
+
 QT += testlib
 QT -= gui
-
 CONFIG += testcase c++11
 
 SOURCES += \
@@ -10,17 +11,16 @@ SOURCES += \
 HEADERS += \
     dutiltester.h
 
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../dbase/release/ -ldtkbase
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../dbase/debug/ -ldtkbase
-else:unix: LIBS += -L$$OUT_PWD/../../dbase/ -ldtkbase
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../dbase/release/ -ldtkbase$$VERSIONSUFFIX
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../dbase/debug/ -ldtkbase$$VERSIONSUFFIX
+else:unix: LIBS += -L$$OUT_PWD/../../dbase/ -ldtkbase$$VERSIONSUFFIX
 
 INCLUDEPATH += $$PWD/../../dbase
 DEPENDPATH += $$PWD/../../dbase
 
-
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../dutil/release/ -ldtkutil
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../dutil/debug/ -ldtkutil
-else:unix: LIBS += -L$$OUT_PWD/../../dutil/ -ldtkutil
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../dutil/release/ -ldtkutil$$VERSIONSUFFIX
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../dutil/debug/ -ldtkutil$$VERSIONSUFFIX
+else:unix: LIBS += -L$$OUT_PWD/../../dutil/ -ldtkutil$$VERSIONSUFFIX
 
 INCLUDEPATH += $$PWD/../../dutil
 DEPENDPATH += $$PWD/../../dutil

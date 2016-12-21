@@ -9,7 +9,7 @@ Build-Depends: debhelper (>= 9), qt5-default, pkg-config,
  libfontconfig1-dev, libfreetype6-dev, libglib2.0-dev, libxrender-dev
 Standards-Version: 3.9.6
 
-Package: libdtkbase
+Package: libdtkbase-0.2
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Multi-Arch: same
@@ -18,15 +18,15 @@ Description: Deepin Tool Kit Base library
  .
  This package contains the shared libraries.
 
-Package: libdtkbase-dev
+Package: libdtkbase-0.2-dev
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libdtkutil( =${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, libdtkbase-0.2( =${binary:Version})
 Description: Deepin Tool Kit Base Devel library
  DtkBase is base devel library of Deepin Qt/C++ applications.
  .
  This package contains the header files and static libraries of DtkBase
 
-Package: libdtkutil
+Package: libdtkutil-0.2
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Multi-Arch: same
@@ -35,27 +35,27 @@ Description: Deepin Tool Kit Util library
  .
  This package contains the shared libraries.
 
-Package: libdtkutil-dev
+Package: libdtkutil-0.2-dev
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libdtkutil( =${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, libdtkutil-0.2( =${binary:Version})
 Description: Deepin Tool Kit Util library
  DtkUtil is standard utils library of Deepin Qt/C++ applications.
  .
  This package contains the header files and static libraries of DtkUtil
 
-Package: libdtkwidget
+Package: libdtkwidget-0.2
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, dde-qt5integration, libdtkutil
+Depends: ${shlibs:Depends}, ${misc:Depends}, libdtkutil-0.2
 Multi-Arch: same
 Description: Deepin graphical user interface library
  DtkWidget is Deepin graphical user interface for deepin desktop development.
  .
  This package contains the shared libraries.
 
-Package: libdtkwidget-dev
+Package: libdtkwidget-0.2-dev
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libdtkwidget( =${binary:Version}),
- qtmultimedia5-dev, libqt5x11extras5-dev, libdtkutil-dev
+Depends: ${shlibs:Depends}, ${misc:Depends}, libdtkwidget-0.2( =${binary:Version}),
+ qtmultimedia5-dev, libqt5x11extras5-dev, libdtkutil-0.2-dev
 Description: Deepin graphical user interface library
  DtkWidget is Deepin graphical user interface for deepin desktop development.
  .

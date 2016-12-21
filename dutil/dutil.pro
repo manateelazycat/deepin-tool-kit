@@ -4,7 +4,7 @@ include(dlog/dlog.pri)
 
 QT -= gui
 
-TARGET = dtkutil
+TARGET = dtkutil$$VERSIONSUFFIX
 
 DEFINES += LIBDTKUTIL_LIBRARY
 
@@ -34,9 +34,9 @@ QMAKE_PKGCONFIG_NAME = DTK_UTIL
 QMAKE_PKGCONFIG_DESCRIPTION = Deepin Tool Kit Util Module
 QMAKE_PKGCONFIG_INCDIR = $$includes.path
 
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../dbase/release/ -ldtkbase
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../dbase/debug/ -ldtkbase
-else:unix: LIBS += -L$$OUT_PWD/../dbase/ -ldtkbase
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../dbase/release/ -ldtkbase$$VERSIONSUFFIX
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../dbase/debug/ -ldtkbase$$VERSIONSUFFIX
+else:unix: LIBS += -L$$OUT_PWD/../dbase/ -ldtkbase$$VERSIONSUFFIX
 
 INCLUDEPATH += $$PWD/../dbase
 DEPENDPATH += $$PWD/../dbase

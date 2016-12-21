@@ -1,7 +1,7 @@
 include($$PWD/../common/lib.pri)
 include(widgets/widgets.pri)
 
-TARGET = dtkwidget
+TARGET = dtkwidget$$VERSIONSUFFIX
 
 DEFINES += LIBDTKWIDGET_LIBRARY
 
@@ -39,13 +39,13 @@ QMAKE_PKGCONFIG_NAME = DTK_WIDGET
 QMAKE_PKGCONFIG_DESCRIPTION = Deepin Tool Kit UI Module
 QMAKE_PKGCONFIG_INCDIR = $$includes.path
 
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../dbase/release/ -ldtkbase
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../dbase/debug/ -ldtkbase
-else:unix: LIBS += -L$$OUT_PWD/../dbase/ -ldtkbase
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../dbase/release/ -ldtkbase$$VERSIONSUFFIX
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../dbase/debug/ -ldtkbase$$VERSIONSUFFIX
+else:unix: LIBS += -L$$OUT_PWD/../dbase/ -ldtkbase$$VERSIONSUFFIX
 
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../dutil/release/ -ldtkutil
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../dutil/debug/ -ldtkutil
-else:unix: LIBS += -L$$OUT_PWD/../dutil/ -ldtkutil
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../dutil/release/ -ldtkutil$$VERSIONSUFFIX
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../dutil/debug/ -ldtkutil$$VERSIONSUFFIX
+else:unix: LIBS += -L$$OUT_PWD/../dutil/ -ldtkutil$$VERSIONSUFFIX
 
 INCLUDEPATH += $$PWD/../dbase
 DEPENDPATH += $$PWD/../dbase

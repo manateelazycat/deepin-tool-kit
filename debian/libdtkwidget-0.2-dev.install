@@ -1,0 +1,3 @@
+usr/include/*/DWidget/
+usr/lib/*/pkgconfig/dtkwidget*.pc
+usr/lib/*/libdtkwidget*.so

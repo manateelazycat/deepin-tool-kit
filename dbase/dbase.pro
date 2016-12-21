@@ -4,7 +4,7 @@ include($$PWD/dbase.pri)
 
 QT -= gui
 
-TARGET = dtkbase
+TARGET = dtkbase$$VERSIONSUFFIX
 
 DEFINES += LIBDTKBASE_LIBRARY
 

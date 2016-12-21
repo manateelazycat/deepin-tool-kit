@@ -1,3 +1,5 @@
+include($$PWD/../../../config.pri)
+
 QT       += core gui multimedia multimediawidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -63,24 +65,24 @@ win32* {
     INCLUDEPATH += $$PWD/../../../dwidget/platforms/windows
 }
 
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../../dbase/release/ -ldtkbase
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../../dbase/debug/ -ldtkbase
-else:unix: LIBS += -L$$OUT_PWD/../../../dbase/ -ldtkbase
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../../dbase/release/ -ldtkbase$$VERSIONSUFFIX
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../../dbase/debug/ -ldtkbase$$VERSIONSUFFIX
+else:unix: LIBS += -L$$OUT_PWD/../../../dbase/ -ldtkbase$$VERSIONSUFFIX
 
 INCLUDEPATH += $$PWD/../../../dbase
 DEPENDPATH += $$PWD/../../../dbase
 
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../../dwidget/release/ -ldtkwidget
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../../dwidget/debug/ -ldtkwidget
-else:unix: LIBS += -L$$OUT_PWD/../../../dwidget/ -ldtkwidget
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../../dwidget/release/ -ldtkwidget$$VERSIONSUFFIX
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../../dwidget/debug/ -ldtkwidget$$VERSIONSUFFIX
+else:unix: LIBS += -L$$OUT_PWD/../../../dwidget/ -ldtkwidget$$VERSIONSUFFIX
 
 INCLUDEPATH += $$PWD/../../../dwidget
 INCLUDEPATH += $$PWD/../../../dwidget/widgets
 DEPENDPATH += $$PWD/../../../dwidget
 
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../../dutil/release/ -ldtkutil
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../../dutil/debug/ -ldtkutil
-else:unix: LIBS += -L$$OUT_PWD/../../../dutil/ -ldtkutil
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../../dutil/release/ -ldtkutil$$VERSIONSUFFIX
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../../dutil/debug/ -ldtkutil$$VERSIONSUFFIX
+else:unix: LIBS += -L$$OUT_PWD/../../../dutil/ -ldtkutil$$VERSIONSUFFIX
 
 INCLUDEPATH += $$PWD/../../../dutil
 INCLUDEPATH += $$PWD/../../../dutil/dlog
