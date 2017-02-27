@@ -5,17 +5,35 @@ TARGET = dtkwidget$$VERSIONSUFFIX
 
 DEFINES += LIBDTKWIDGET_LIBRARY
 
-QT += multimedia multimediawidgets platformsupport-private
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT += multimedia multimediawidgets
+greaterThan(QT_MAJOR_VERSION, 4) {
+  QT += widgets
+  # Qt >= 5.8
+  greaterThan(QT_MAJOR_VERSION, 5)|greaterThan(QT_MINOR_VERSION, 7): QT += gui-private
+  else: QT += platformsupport-private
+}
 
 unix{
     QT += x11extras dbus
     CONFIG += link_pkgconfig
-    PKGCONFIG += x11 xext
+    PKGCONFIG += x11 xext dtksettings dtksettingsview
+}
+
+win32* {
+    #DEPENDS dtksettings
+    INCLUDEPATH += $$INCLUDE_INSTALL_DIR\libdtk-0.1.0\DSettings
+    DEPENDPATH += $$INCLUDE_INSTALL_DIR\libdtk-0.1.0\DSettings
+    LIBS += -L$$LIB_INSTALL_DIR -ldtksettings
+
+    #DEPENDS dtksettingsview
+    INCLUDEPATH += $$INCLUDE_INSTALL_DIR\libdtk-0.1.0\DSettingsView
+    DEPENDPATH += $$INCLUDE_INSTALL_DIR\libdtk-0.1.0\DSettingsView
+    LIBS += -L$$LIB_INSTALL_DIR -ldtksettingsview
 }
 
 HEADERS += dwidget_global.h \
     dutility.h
+
 includes.path = $${DTK_INCLUDEPATH}/DWidget
 includes.files += dwidget_global.h \
             widgets/*.h \
@@ -55,7 +73,7 @@ DEPENDPATH += $$PWD/../dutil
 SOURCES += \
     dutility.cpp
 
-system($$PWD/../tool/translate_generation.sh)
+!system($$PWD/../tool/translate_generation.sh): error("Failed to generate translation")
 
 TRANSLATIONS += $$PWD/translations/$${TARGET}.ts \
                 $$PWD/translations/$${TARGET}_zh_CN.ts

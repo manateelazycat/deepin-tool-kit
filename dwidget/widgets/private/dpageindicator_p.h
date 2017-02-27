@@ -21,6 +21,8 @@ public:
 public:
     int m_pageCount;
     int m_currentPage;
+    QColor m_color;
+    QColor m_secondaryColor;
 };
 
 DWIDGET_END_NAMESPACE

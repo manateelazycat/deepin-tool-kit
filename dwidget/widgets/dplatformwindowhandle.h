@@ -8,6 +8,8 @@
 #include <QColor>
 #include <QRegion>
 
+#include <functional>
+
 QT_BEGIN_NAMESPACE
 class QWindow;
 class QWidget;
@@ -31,6 +33,7 @@ class DPlatformWindowHandle : public QObject
     Q_PROPERTY(bool translucentBackground READ translucentBackground WRITE setTranslucentBackground NOTIFY translucentBackgroundChanged)
     Q_PROPERTY(bool enableSystemResize READ enableSystemResize WRITE setEnableSystemResize NOTIFY enableSystemResizeChanged)
     Q_PROPERTY(bool enableSystemMove READ enableSystemMove WRITE setEnableSystemMove NOTIFY enableSystemMoveChanged)
+    Q_PROPERTY(bool enableBlurWindow READ enableBlurWindow WRITE setEnableBlurWindow NOTIFY enableBlurWindowChanged)
 
 public:
     explicit DPlatformWindowHandle(QWindow *window, QObject *parent = 0);
@@ -38,8 +41,23 @@ public:
 
     static void enableDXcbForWindow(QWidget *widget);
     static void enableDXcbForWindow(QWindow *window);
-    static bool isEnabledDXcb(QWidget *widget);
-    static bool isEnabledDXcb(QWindow *window);
+    static bool isEnabledDXcb(const QWidget *widget);
+    static bool isEnabledDXcb(const QWindow *window);
+
+    struct WMBlurArea {
+        quint32 x = 0;
+        quint32 y = 0;
+        quint32 width = 0;
+        quint32 height = 0;
+        quint32 xRadius = 0;
+        quint32 yRaduis = 0;
+    };
+
+    static bool hasBlurWindow();
+    static bool setWindowBlurAreaByWM(QWidget *widget, const QVector<WMBlurArea> &area);
+    static bool setWindowBlurAreaByWM(QWindow *window, const QVector<WMBlurArea> &area);
+    static bool connectWindowManagerChangedSignal(QObject *object, std::function<void ()> slot);
+    static bool connectHasBlurWindowChanged(QObject *object, std::function<void ()> slot);
 
     int windowRadius() const;
 
@@ -57,6 +75,7 @@ public:
     bool translucentBackground() const;
     bool enableSystemResize() const;
     bool enableSystemMove() const;
+    bool enableBlurWindow() const;
 
 public slots:
     void setWindowRadius(int windowRadius);
@@ -74,6 +93,7 @@ public slots:
     void setTranslucentBackground(bool translucentBackground);
     void setEnableSystemResize(bool enableSystemResize);
     void setEnableSystemMove(bool enableSystemMove);
+    void setEnableBlurWindow(bool enableBlurWindow);
 
 signals:
     void frameMarginsChanged();
@@ -88,6 +108,7 @@ signals:
     void translucentBackgroundChanged();
     void enableSystemResizeChanged();
     void enableSystemMoveChanged();
+    void enableBlurWindowChanged();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) Q_DECL_OVERRIDE;
@@ -96,7 +117,26 @@ private:
     QWindow *m_window;
 };
 
+inline DPlatformWindowHandle::WMBlurArea dMakeWMBlurArea(quint32 x, quint32 y, quint32 width, quint32 height, quint32 xr = 0, quint32 yr = 0)
+{
+    DPlatformWindowHandle::WMBlurArea a;
+
+    a.x = x;
+    a.y = y;
+    a.width = width;
+    a.height = height;
+    a.xRadius = xr;
+    a.yRaduis = yr;
+
+    return a;
+}
+
 DWIDGET_END_NAMESPACE
+
+QT_BEGIN_NAMESPACE
+DWIDGET_USE_NAMESPACE
+QDebug operator<<(QDebug deg, const DPlatformWindowHandle::WMBlurArea &area);
+QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QPainterPath)
 Q_DECLARE_METATYPE(QRegion)

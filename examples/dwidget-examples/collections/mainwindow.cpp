@@ -11,7 +11,14 @@
 #include <QPushButton>
 #include <QMessageBox>
 #include <QMenu>
+#include <QFontDatabase>
+#include <QTextCodec>
 #include <QDebug>
+
+#include <option.h>
+#include <settings.h>
+
+#include "dsettingsdialog.h"
 
 #include "dslider.h"
 #include "dthememanager.h"
@@ -31,6 +38,7 @@
 #include "cameraform.h"
 #include "graphicseffecttab.h"
 
+DTK_USE_NAMESPACE
 DWIDGET_USE_NAMESPACE
 
 MainWindow::MainWindow(QWidget *parent)
@@ -71,6 +79,8 @@ MainWindow::MainWindow(QWidget *parent)
     if (titlebar) {
         titlebar->setMenu(new QMenu(titlebar));
         titlebar->setSeparatorVisible(true);
+        titlebar->menu()->addAction("dfm-settings");
+        titlebar->menu()->addAction("dt-settings");
         titlebar->menu()->addAction("testmenu1");
         titlebar->menu()->addAction("testmenu2");
         QMenu *menu = titlebar->menu()->addMenu("menu1");
@@ -81,8 +91,52 @@ MainWindow::MainWindow(QWidget *parent)
     }
 }
 
+#include <QTemporaryFile>
+#include <qsettingbackend.h>
+
 void MainWindow::menuItemInvoked(QAction *action)
 {
+    if (action->text() == "dfm-settings") {
+        QTemporaryFile tmpFile;
+        tmpFile.open();
+        auto backend = new QSettingBackend(tmpFile.fileName());
+
+        auto settings = Settings::fromJsonFile(":/resources/data/dfm-settings.json");
+        settings->setBackend(backend);
+
+        DSettingsDialog dsd(this);
+        dsd.updateSettings(settings);
+        dsd.exec();
+        return;
+    }
+
+    if (action->text() == "dt-settings") {
+        QTemporaryFile tmpFile;
+        tmpFile.open();
+        auto backend = new QSettingBackend(tmpFile.fileName());
+
+        auto settings = Settings::fromJsonFile(":/resources/data/dt-settings.json");
+        settings->setBackend(backend);
+
+        QFontDatabase fontDatabase;
+        auto fontFamliy = settings->option("base.font.family");
+        fontFamliy->setData("items", fontDatabase.families());
+        fontFamliy->setValue(0);
+
+        QStringList codings;
+        for (auto coding: QTextCodec::availableCodecs())
+            codings << coding;
+
+        auto encoding = settings->option("advance.encoding.encoding");
+        encoding->setData("items", codings);
+        encoding->setValue(0);
+
+        DSettingsDialog dsd(this);
+        dsd.updateSettings(settings);
+        dsd.exec();
+        return;
+    }
+
     QMessageBox::warning(this, "menu clieck",  action->text() + ", was cliecked");
     qDebug() << "click" << action << action->isChecked();
 }
@@ -119,7 +173,7 @@ void MainWindow::initTabWidget()
 
     CameraForm *cameraform = new CameraForm(this);
 
-    GraphicsEffectTab *effectTab = new GraphicsEffectTab;
+    GraphicsEffectTab *effectTab = new GraphicsEffectTab(this);
 
     m_mainTab->addTab(effectTab, "GraphicsEffect");
     m_mainTab->addTab(comboBoxTab, "ComboBox");

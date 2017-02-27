@@ -25,6 +25,14 @@ DEFINE_CONST_CHAR(frameMargins);
 DEFINE_CONST_CHAR(translucentBackground);
 DEFINE_CONST_CHAR(enableSystemResize);
 DEFINE_CONST_CHAR(enableSystemMove);
+DEFINE_CONST_CHAR(enableBlurWindow);
+DEFINE_CONST_CHAR(windowBlurAreas);
+
+// functions
+DEFINE_CONST_CHAR(setWmBlurWindowBackgroundArea);
+DEFINE_CONST_CHAR(hasBlurWindow);
+DEFINE_CONST_CHAR(connectWindowManagerChangedSignal);
+DEFINE_CONST_CHAR(connectHasBlurWindowChanged);
 
 DPlatformWindowHandle::DPlatformWindowHandle(QWindow *window, QObject *parent)
     : QObject(parent)
@@ -86,14 +94,85 @@ void DPlatformWindowHandle::enableDXcbForWindow(QWindow *window)
     }
 }
 
-bool DPlatformWindowHandle::isEnabledDXcb(QWidget *widget)
+bool DPlatformWindowHandle::isEnabledDXcb(const QWidget *widget)
 {
     return widget->windowHandle() && widget->windowHandle()->property(_useDxcb).toBool();
 }
 
-bool DPlatformWindowHandle::isEnabledDXcb(QWindow *window)
+bool DPlatformWindowHandle::isEnabledDXcb(const QWindow *window)
 {
     return window->property(_useDxcb).toBool();
+}
+
+bool DPlatformWindowHandle::hasBlurWindow()
+{
+    QFunctionPointer wmHasBlurWindow = Q_NULLPTR;
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 4, 0)
+    wmHasBlurWindow = qApp->platformFunction(_hasBlurWindow);
+#endif
+
+    return wmHasBlurWindow && reinterpret_cast<bool(*)()>(wmHasBlurWindow)();
+}
+
+bool DPlatformWindowHandle::setWindowBlurAreaByWM(QWidget *widget, const QVector<DPlatformWindowHandle::WMBlurArea> &area)
+{
+    Q_ASSERT(widget);
+
+    return widget->windowHandle() && setWindowBlurAreaByWM(widget->windowHandle(), area);
+}
+
+bool DPlatformWindowHandle::setWindowBlurAreaByWM(QWindow *window, const QVector<DPlatformWindowHandle::WMBlurArea> &area)
+{
+    if (!window)
+        return false;
+
+    if (isEnabledDXcb(window)) {
+        window->setProperty(_windowBlurAreas, QVariant::fromValue(*(reinterpret_cast<const QVector<quint32>*>(&area))));
+
+        return true;
+    }
+
+    QFunctionPointer setWmBlurWindowBackgroundArea = Q_NULLPTR;
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 4, 0)
+    setWmBlurWindowBackgroundArea = qApp->platformFunction(_setWmBlurWindowBackgroundArea);
+#endif
+
+    if (!setWmBlurWindowBackgroundArea) {
+        qWarning("setWindowBlurAreaByWM is not support");
+
+        return false;
+    }
+
+    QSurfaceFormat format = window->format();
+
+    format.setAlphaBufferSize(8);
+    window->setFormat(format);
+
+    return reinterpret_cast<bool(*)(const uint, const QVector<WMBlurArea>&)>(setWmBlurWindowBackgroundArea)(window->winId(), area);
+}
+
+bool DPlatformWindowHandle::connectWindowManagerChangedSignal(QObject *object, std::function<void ()> slot)
+{
+    QFunctionPointer connectWindowManagerChangedSignal = Q_NULLPTR;
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 4, 0)
+    connectWindowManagerChangedSignal = qApp->platformFunction(_connectWindowManagerChangedSignal);
+#endif
+
+    return connectWindowManagerChangedSignal && reinterpret_cast<bool(*)(QObject *object, std::function<void ()>)>(connectWindowManagerChangedSignal)(object, slot);
+}
+
+bool DPlatformWindowHandle::connectHasBlurWindowChanged(QObject *object, std::function<void ()> slot)
+{
+    QFunctionPointer connectHasBlurWindowChanged = Q_NULLPTR;
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 4, 0)
+    connectHasBlurWindowChanged = qApp->platformFunction(_connectHasBlurWindowChanged);
+#endif
+
+    return connectHasBlurWindowChanged && reinterpret_cast<bool(*)(QObject *object, std::function<void ()>)>(connectHasBlurWindowChanged)(object, slot);
 }
 
 int DPlatformWindowHandle::windowRadius() const
@@ -156,6 +235,11 @@ bool DPlatformWindowHandle::enableSystemMove() const
     return m_window->property(_enableSystemMove).toBool();
 }
 
+bool DPlatformWindowHandle::enableBlurWindow() const
+{
+    return m_window->property(_enableBlurWindow).toBool();
+}
+
 void DPlatformWindowHandle::setWindowRadius(int windowRadius)
 {
     m_window->setProperty(_windowRadius, windowRadius);
@@ -211,6 +295,11 @@ void DPlatformWindowHandle::setEnableSystemMove(bool enableSystemMove)
     m_window->setProperty(_enableSystemMove, enableSystemMove);
 }
 
+void DPlatformWindowHandle::setEnableBlurWindow(bool enableBlurWindow)
+{
+    m_window->setProperty(_enableBlurWindow, enableBlurWindow);
+}
+
 bool DPlatformWindowHandle::eventFilter(QObject *obj, QEvent *event)
 {
     if (obj == m_window) {
@@ -235,6 +324,14 @@ bool DPlatformWindowHandle::eventFilter(QObject *obj, QEvent *event)
                 emit frameMaskChanged();
             } else if (e->propertyName() == _frameMargins) {
                 emit frameMarginsChanged();
+            } else if (e->propertyName() == _translucentBackground) {
+                emit translucentBackgroundChanged();
+            } else if (e->propertyName() == _enableSystemResize) {
+                emit enableSystemResizeChanged();
+            } else if (e->propertyName() == _enableSystemMove) {
+                emit enableSystemMoveChanged();
+            } else if (e->propertyName() == _enableBlurWindow) {
+                emit enableBlurWindowChanged();
             }
         }
     }
@@ -243,3 +340,21 @@ bool DPlatformWindowHandle::eventFilter(QObject *obj, QEvent *event)
 }
 
 DWIDGET_END_NAMESPACE
+
+QT_BEGIN_NAMESPACE
+QDebug operator<<(QDebug deg, const DPlatformWindowHandle::WMBlurArea &area)
+{
+    QDebugStateSaver saver(deg);
+    Q_UNUSED(saver)
+
+    deg.setAutoInsertSpaces(true);
+    deg << "x:" << area.x
+        << "y:" << area.y
+        << "width:" << area.width
+        << "height:" << area.height
+        << "xRadius:" << area.xRadius
+        << "yRadius:" << area.yRaduis;
+
+    return deg;
+}
+QT_END_NAMESPACE

@@ -20,6 +20,9 @@
 #include <QRegExp>
 #include <QRegularExpression>
 
+#include <QStyle>
+#include <QStyleFactory>
+
 #include "private/ddialog_p.h"
 
 #include "dialog_constants.h"
@@ -51,7 +54,8 @@ void DialogButton::setButtonType(int buttonType)
 }
 
 DDialogPrivate::DDialogPrivate(DDialog *qq) :
-    DAbstractDialogPrivate(qq)
+    DAbstractDialogPrivate(qq),
+    fixedStyle(Q_NULLPTR)
 {
 
 }
@@ -140,7 +144,6 @@ void DDialogPrivate::init()
     button_action->setAutoRepeat(false);
 
     QObject::connect(closeButton, SIGNAL(clicked()), q, SLOT(close()));
-    QObject::connect(q, SIGNAL(sizeChanged(QSize)), q, SLOT(_q_updateLabelMaxWidth()));
     QObject::connect(button_action, SIGNAL(triggered(bool)), q, SLOT(_q_defaultButtonTriggered()));
 
     q->setLayout(mainLayout);
@@ -212,6 +215,21 @@ QString DDialogPrivate::elideString(QString str, const QFontMetrics &fm, int wid
     }
 }
 
+void DDialogPrivate::updateSize()
+{
+    D_Q(DDialog);
+
+    if (!q->testAttribute(Qt::WA_Resized)) {
+        QSize size = q->sizeHint();
+
+        size.setWidth(qMax(size.width(), DIALOG::DEFAULT_WIDTH));
+        size.setHeight(qMax(size.height(), DIALOG::DEFAULT_HEIGHT));
+
+        q->resize(size);
+        q->setAttribute(Qt::WA_Resized, false);
+    }
+}
+
 void DDialogPrivate::_q_onButtonClicked()
 {
     D_Q(DDialog);
@@ -225,19 +243,6 @@ void DDialogPrivate::_q_onButtonClicked()
         if(onButtonClickedClose)
             q->done(clickedButtonIndex);
     }
-}
-
-void DDialogPrivate::_q_updateLabelMaxWidth()
-{
-    D_Q(DDialog);
-
-    int labelMaxWidth = q->maximumWidth() - titleLabel->x() - DIALOG::CLOSE_BUTTON_WIDTH;
-
-    QFontMetrics fm = titleLabel->fontMetrics();
-    titleLabel->setText(elideString(title, fm, labelMaxWidth));
-
-    fm = messageLabel->fontMetrics();
-    messageLabel->setText(elideString(message, fm, labelMaxWidth));
 }
 
 void DDialogPrivate::_q_defaultButtonTriggered()
@@ -609,7 +614,6 @@ void DDialog::setTitle(const QString &title)
     d->title = title;
     d->titleLabel->setText(title);
     d->titleLabel->setHidden(title.isEmpty());
-    d->_q_updateLabelMaxWidth();
 
     emit titleChanged(title);
 }
@@ -624,7 +628,6 @@ void DDialog::setMessage(const QString &message)
     d->message = message;
     d->messageLabel->setText(message);
     d->messageLabel->setHidden(message.isEmpty());
-    d->_q_updateLabelMaxWidth();
 
     emit messageChanged(message);
 }
@@ -703,7 +706,8 @@ void DDialog::showEvent(QShowEvent *event)
 
     DAbstractDialog::showEvent(event);
 
-    d->_q_updateLabelMaxWidth();
+    setAttribute(Qt::WA_Resized, false);
+    d->updateSize();
 
     emit visibleChanged(isVisible());
 }
@@ -726,8 +730,65 @@ void DDialog::childEvent(QChildEvent *event)
 
     D_D(DDialog);
 
-    if (event->added() && d->closeButton)
-        d->closeButton->raise();
+    if (event->added()) {
+        if (d->closeButton) {
+            d->closeButton->raise();
+        }
+
+        QStyle *style = d->fixedStyle;
+        if (!style) {
+            style = QStyleFactory::create("dlight");
+            if (style) {
+                d->fixedStyle = style;
+                style->setParent(this);
+            }
+        }
+
+
+        QWidget *child = qobject_cast<QWidget*>(event->child());
+        if (child) {
+            if (style) {
+                child->setStyle(style);
+            }
+
+            // TODO(hualet): apply the rule to all dwidgets.
+            // Just tried with no luck, DPsswordWidget's style goes wrong,
+            // no time to deal with this detail, leave it alone for now.
+            if (child->inherits("Dtk::Widget::DLineEdit")) {
+                DThemeManager *dtm = DThemeManager::instance();
+                QString qss = dtm->getQssForWidget("DLineEdit", "light");
+
+                child->setStyleSheet(qss);
+                dtm->disconnect(child);
+            }
+        }
+    }
+}
+
+void DDialog::resizeEvent(QResizeEvent *event)
+{
+    DAbstractDialog::resizeEvent(event);
+
+    D_D(DDialog);
+
+
+    d->titleLabel->setWordWrap(false);
+    int labelMaxWidth = maximumWidth() - d->closeButton->width() - d->titleLabel->x();
+
+    if (d->titleLabel->sizeHint().width() > labelMaxWidth) {
+        d->titleLabel->setFixedWidth(labelMaxWidth);
+        d->titleLabel->setWordWrap(true);
+        d->titleLabel->setFixedHeight(d->titleLabel->sizeHint().height());
+    }
+
+    d->messageLabel->setWordWrap(false);
+    labelMaxWidth = maximumWidth() - d->closeButton->width() - d->messageLabel->x();
+
+    if (d->messageLabel->sizeHint().width() > labelMaxWidth) {
+        d->messageLabel->setFixedWidth(labelMaxWidth);
+        d->messageLabel->setWordWrap(true);
+        d->messageLabel->setFixedHeight(d->messageLabel->sizeHint().height());
+    }
 }
 
 DWIDGET_END_NAMESPACE

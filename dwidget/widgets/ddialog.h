@@ -106,12 +106,12 @@ protected:
     void showEvent(QShowEvent *event) Q_DECL_OVERRIDE;
     void hideEvent(QHideEvent *event) Q_DECL_OVERRIDE;
     void childEvent(QChildEvent *event) Q_DECL_OVERRIDE;
+    void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
 
 private:
     D_DECLARE_PRIVATE(DDialog)
 
     Q_PRIVATE_SLOT(d_func(), void _q_onButtonClicked())
-    Q_PRIVATE_SLOT(d_func(), void _q_updateLabelMaxWidth())
     Q_PRIVATE_SLOT(d_func(), void _q_defaultButtonTriggered())
 };
 
