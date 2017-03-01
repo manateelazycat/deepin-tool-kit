@@ -41,10 +41,23 @@ void DArrowRectangle::show(int x, int y)
 
     m_lastPos = QPoint(x, y);
     move(x, y);//Overload function
-    if (isHidden())
+    
+    // Don't use 'isHidden', should use 'isVisible'.
+    if (!isVisible()) {
         QWidget::show();
+        
+        // Need add 'activateWindow' after 'show',
+        // otherwise signal 'WindowDeactivate' never trigger.
+        QWidget::activateWindow();
+    }
 
     update();
+}
+
+void DArrowRectangle::hide()
+{
+    QWidget::hide();
+    QWidget::setVisible(false);
 }
 
 void DArrowRectangle::setContent(QWidget *content)

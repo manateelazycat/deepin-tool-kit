@@ -70,6 +70,7 @@ public:
     void setHeight(int value);
 
     virtual void show(int x, int y);
+    virtual void hide();
 
     void setContent(QWidget *content);
     QWidget *getContent() const;
